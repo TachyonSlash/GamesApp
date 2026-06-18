@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
-import { getGameById } from '../../../services/games';
+import { getGameById, searchGames } from '../../../services/games';
 
 function getImageUrl(image) {
   if (!image?.url) {
@@ -37,8 +37,9 @@ function formatList(values) {
 }
 
 export default function GameDetailsScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, query } = useLocalSearchParams();
   const gameId = Array.isArray(id) ? id[0] : id;
+  const gameQuery = Array.isArray(query) ? query[0] : query;
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,7 +52,17 @@ export default function GameDetailsScreen() {
         setLoading(true);
         setError('');
 
-        const data = await getGameById(gameId);
+        let data = await getGameById(gameId);
+
+        if (!data && gameQuery) {
+          const searchResults = await searchGames(gameQuery);
+          data = Array.isArray(searchResults) ? searchResults[0] ?? null : null;
+        }
+
+        if (!data && gameId && Number.isNaN(Number(gameId))) {
+          const searchResults = await searchGames(gameId);
+          data = Array.isArray(searchResults) ? searchResults[0] ?? null : null;
+        }
 
         if (isActive) {
           setGame(data);
@@ -73,7 +84,7 @@ export default function GameDetailsScreen() {
     return () => {
       isActive = false;
     };
-  }, [gameId]);
+  }, [gameId, gameQuery]);
 
   const screenshots = useMemo(() => game?.screenshots ?? [], [game]);
   const releaseDates = useMemo(() => game?.release_dates ?? [], [game]);

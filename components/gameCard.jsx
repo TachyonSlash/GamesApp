@@ -22,6 +22,7 @@ export default function GameCard({ item, horizontal = false }) {
   const genre = item?.genres?.[0]?.name ?? 'Sin género';
   const year = getYear(item?.release_date ?? item?.first_release_date);
   const gameId = item?.id != null ? String(item.id) : '';
+  const detailQuery = String(item?.detailQuery ?? '').trim();
 
   return (
     <Pressable
@@ -30,7 +31,10 @@ export default function GameCard({ item, horizontal = false }) {
           return;
         }
 
-        router.push({ pathname: '/game/[id]', params: { id: gameId } });
+        router.push({
+          pathname: '/game/[id]',
+          params: detailQuery ? { id: gameId, query: detailQuery } : { id: gameId },
+        });
       }}
     >
       <ThemedView style={[styles.card, horizontal && styles.horizontalCard]}>
