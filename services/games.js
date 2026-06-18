@@ -10,6 +10,9 @@ if (!CLIENT_ID || !ACCESS_TOKEN) {
 const GAME_FIELDS =
   'fields id,name,summary,first_release_date,cover.url,total_rating,genres.name,platforms.name;';
 
+const GAME_DETAIL_FIELDS =
+  'fields id,name,summary,storyline,first_release_date,cover.url,total_rating,aggregated_rating,rating,genres.name,platforms.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,franchises.name,game_modes.name,themes.name,player_perspectives.name,screenshots.url,screenshots.image_id,artworks.url,artworks.image_id,release_dates.date,release_dates.human,release_dates.platform.name,version_parent.name;';
+
 const DEFAULT_HEADERS = {
   'Client-ID': CLIENT_ID,
   Authorization: `Bearer ${ACCESS_TOKEN}`,
@@ -51,6 +54,18 @@ export function getGames() {
   return igdbRequest(
     'games',
     `${GAME_FIELDS} sort first_release_date desc; limit 20;`
+  );
+}
+
+export function getGameById(id) {
+  const gameId = Number(id);
+
+  if (!Number.isFinite(gameId)) {
+    return Promise.resolve(null);
+  }
+
+  return igdbRequest('games', `${GAME_DETAIL_FIELDS} where id = ${gameId}; limit 1;`).then((items) =>
+    (Array.isArray(items) ? items[0] ?? null : null)
   );
 }
 

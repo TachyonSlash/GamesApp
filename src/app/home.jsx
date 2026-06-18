@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import GameCard from '../../components/gameCard';
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { getPopularGames, getRecentGames, searchGames } from '../../services/games';
 
@@ -76,66 +77,6 @@ export default function Home() {
     setRefreshIndex((value) => value + 1);
   };
 
-  const getImageUrl = (item) => {
-    if (!item?.cover?.url) {
-      return null;
-    }
-
-    return `https:${item.cover.url.replace('t_thumb', 't_1080p')}`;
-  };
-
-  const getYear = (timestamp) => {
-    if (!timestamp) {
-      return '';
-    }
-    return new Date(timestamp * 1000).getFullYear();
-  };
-
-  const getGenre = (item) => {
-    return item?.genres?.[0]?.name ?? 'Sin género';
-  };
-
-  const renderGameCard = ({ item, horizontal = false }) => {
-    const imageUrl = getImageUrl(item);
-    const title = item?.name ?? 'Juego sin nombre';
-    const score = item?.total_rating ? item.total_rating.toFixed(1) : 'N/A';
-    const genre = getGenre(item);
-    const year = getYear(item?.release_date ?? item?.first_release_date);
-    const coverResizeMode = horizontal ? 'cover' : 'contain';
-
-    return (
-      <ThemedView style={[styles.card, horizontal && styles.horizontalCard]}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.coverImage} resizeMode={coverResizeMode} />
-        ) : (
-          <View style={styles.coverPlaceholder}>
-            <ThemedText type="small" themeColor="textSecondary">
-              Sin imagen
-            </ThemedText>
-          </View>
-        )}
-
-        <View style={styles.cardInfo}>
-          <ThemedText type="smallBold" style={styles.gameTitle}>
-            {title}
-          </ThemedText>
-
-          <View style={styles.metaRow}>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.genreText}>
-              {genre}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {year || '---'}
-            </ThemedText>
-            <ThemedText type="smallBold" style={styles.score}>
-              {score}
-            </ThemedText>
-          </View>
-        </View>
-      </ThemedView>
-    );
-  };
-
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -190,7 +131,7 @@ export default function Home() {
                   data={searchResults}
                   scrollEnabled={false}
                   keyExtractor={(item, index) => String(item?.id ?? item?.slug ?? index)}
-                  renderItem={renderGameCard}
+                  renderItem={({ item }) => <GameCard item={item} />}
                   contentContainerStyle={styles.recentList}
                   ListEmptyComponent={
                     <ThemedView style={styles.emptyState}>
@@ -215,7 +156,7 @@ export default function Home() {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   keyExtractor={(item, index) => String(item?.id ?? item?.slug ?? index)}
-                  renderItem={(props) => renderGameCard({ ...props, horizontal: true })}
+                  renderItem={({ item }) => <GameCard item={item} horizontal />}
                   contentContainerStyle={styles.popularList}
                 />
 
@@ -227,7 +168,7 @@ export default function Home() {
                   data={recentGames}
                   scrollEnabled={false}
                   keyExtractor={(item, index) => String(item?.id ?? item?.slug ?? index)}
-                  renderItem={renderGameCard}
+                  renderItem={({ item }) => <GameCard item={item} />}
                   contentContainerStyle={styles.recentList}
                   ListEmptyComponent={
                     <ThemedView style={styles.emptyState}>
@@ -322,48 +263,6 @@ const styles = StyleSheet.create({
   },
   recentList: {
     gap: Spacing.three,
-  },
-  card: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: Colors.dark.backgroundElement,
-    width: '100%',
-  },
-  horizontalCard: {
-    width: 220,
-  },
-  coverImage: {
-    width: '100%',
-    height: 360,
-    backgroundColor: Colors.dark.backgroundSelected,
-  },
-  coverPlaceholder: {
-    width: '100%',
-    height: 360,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: Colors.dark.backgroundSelected,
-  },
-  cardInfo: {
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  gameTitle: {
-    fontSize: 18,
-    lineHeight: 24,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: Spacing.two,
-    flexWrap: 'wrap',
-  },
-  genreText: {
-    flexShrink: 1,
-  },
-  score: {
-    color: '#9ad66b',
   },
   emptyState: {
     padding: Spacing.four,
